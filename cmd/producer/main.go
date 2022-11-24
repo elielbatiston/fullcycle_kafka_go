@@ -30,7 +30,11 @@ func main() {
 
 func NewKafkaProducer() *kafka.Producer {
 	configMap := &kafka.ConfigMap{
-		"bootstrap.servers": "fullcycle_kafka_go_kafka_1:9092",
+		"bootstrap.servers":   "fullcycle_kafka_go_kafka_1:9092",
+		"delivery.timeout.ms": "0", //infinito
+		//"acks": "0 (none), 1 (leader), all (-1)"
+		"acks":               "all",
+		"enable.idempotence": "true", //padrao é false. A mensagem pode chegar mais de uma vez, pode perder mensagem. true, garante a entrega e a ordem. Quando true, o acks tem que ser all
 	}
 	p, err := kafka.NewProducer(configMap)
 	if err != nil {
