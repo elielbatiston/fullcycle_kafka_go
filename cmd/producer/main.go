@@ -10,7 +10,7 @@ import (
 func main() {
 	deliveryChan := make(chan kafka.Event)
 	producer := NewKafkaProducer()
-	Publish("mensagem", "teste", producer, nil, deliveryChan)
+	Publish("transferido", "teste", producer, []byte("transferencia"), deliveryChan)
 
 	//isso é de forma sincrona =====
 	// e := <-deliveryChan
