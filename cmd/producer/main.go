@@ -12,13 +12,18 @@ func main() {
 	producer := NewKafkaProducer()
 	Publish("mensagem", "teste", producer, nil, deliveryChan)
 
-	e := <-deliveryChan
-	msg := e.(*kafka.Message)
-	if msg.TopicPartition.Error != nil {
-		fmt.Println("Erro ao enviar")
-	} else {
-		fmt.Println("Mensagem enviada:", msg.TopicPartition)
-	}
+	//isso é de forma sincrona =====
+	// e := <-deliveryChan
+	// msg := e.(*kafka.Message)
+	// if msg.TopicPartition.Error != nil {
+	// 	fmt.Println("Erro ao enviar")
+	// } else {
+	// 	fmt.Println("Mensagem enviada:", msg.TopicPartition)
+	// }
+	//isso é de forma sincrona =====
+
+	//DelivereyReport(deliveryChan) //ainda é sincrona
+	go DelivereyReport(deliveryChan) //joga para outra thread e fica async
 
 	producer.Flush(1000)
 }
@@ -45,4 +50,20 @@ func Publish(msg string, topic string, producer *kafka.Producer, key []byte, del
 		return err
 	}
 	return nil
+}
+
+func DelivereyReport(deliveryChan chan kafka.Event) {
+	//loop infinito lendo o canal, quando tiver mensagem, ele le, caso contrario ele fica aguardando
+	for e := range deliveryChan {
+		switch ev := e.(type) {
+		case *kafka.Message:
+			if ev.TopicPartition.Error != nil {
+				fmt.Println("Erro ao enviar")
+			} else {
+				fmt.Println("Mensagem enviada:", ev.TopicPartition)
+				//anotar no banco de dados que a mensagem foi proecessada.
+				//ex: confirma que uma transferencia bancaria ocorreu.
+			}
+		}
+	}
 }
